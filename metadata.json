@@ -1,0 +1,7 @@
+{
+  "name": "Ô Chữ Bí Mật - Informatics Edition",
+  "description": "An educational secret crossword game for Informatics students with AI-powered question generation.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
