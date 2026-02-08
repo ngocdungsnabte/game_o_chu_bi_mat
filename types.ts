@@ -25,4 +25,5 @@ export interface GameState {
   status: 'setup' | 'playing' | 'revealed' | 'solved';
   revealedIndices: number[]; // Indices of correctly answered questions
   scrambledIndices: number[]; // Shuffled indices of the keyword characters
+  students: string[]; // List of student names
 }

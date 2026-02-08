@@ -22,30 +22,32 @@ const App: React.FC = () => {
     questions: [],
     status: 'setup',
     revealedIndices: [],
-    scrambledIndices: []
+    scrambledIndices: [],
+    students: []
   });
 
-  // correctSound: Âm thanh vỗ tay khi trả lời ĐÚNG câu hỏi
+  // Audio setup
   const [correctSound] = useState(new Audio('https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3'));
-  // wrongSound: Âm thanh "tùng tùng" khi trả lời SAI câu hỏi
   const [wrongSound] = useState(new Audio('https://assets.mixkit.co/active_storage/sfx/2014/2014-preview.mp3'));
-  // victorySound: Âm thanh chiến thắng hào hùng khi hoàn thành
   const [victorySound] = useState(new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'));
-  // applauseSound: Âm thanh vỗ tay nhiệt liệt khi GIẢI MÃ thành công
   const [applauseSound] = useState(new Audio('https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3'));
+  const [rollSound] = useState(new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'));
+  const [pickSound] = useState(new Audio('https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3'));
 
-  const playSound = (type: 'correct' | 'wrong' | 'victory' | 'applause') => {
+  const playSound = (type: 'correct' | 'wrong' | 'victory' | 'applause' | 'roll' | 'pick') => {
     let audio: HTMLAudioElement;
     switch (type) {
       case 'correct': audio = correctSound; break;
       case 'wrong': audio = wrongSound; break;
       case 'victory': audio = victorySound; break;
       case 'applause': audio = applauseSound; break;
+      case 'roll': audio = rollSound; break;
+      case 'pick': audio = pickSound; break;
     }
     
     if (audio) {
       audio.currentTime = 0;
-      audio.play().catch(e => console.warn("Audio play blocked by browser", e));
+      audio.play().catch(e => console.warn("Audio play blocked", e));
     }
   };
 
@@ -53,35 +55,27 @@ const App: React.FC = () => {
     const duration = 5 * 1000;
     const animationEnd = Date.now() + duration;
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-
-    function randomInRange(min: number, max: number) {
-      return Math.random() * (max - min) + min;
-    }
-
+    function randomInRange(min: number, max: number) { return Math.random() * (max - min) + min; }
     const interval: any = setInterval(function() {
       const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
-
+      if (timeLeft <= 0) return clearInterval(interval);
       const particleCount = 50 * (timeLeft / duration);
       confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
       confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
     }, 250);
   };
 
-  const handleStartSetup = (keyword: string, grade: Grade, questions: Question[]) => {
+  const handleStartSetup = (keyword: string, grade: Grade, questions: Question[], students: string[]) => {
     const cleanedKeyword = keyword.replace(/\s/g, "").toUpperCase();
     const indices = Array.from({ length: cleanedKeyword.length }, (_, i) => i);
-    
     setGameState({
       keyword: cleanedKeyword,
       grade,
       questions,
       status: 'playing',
       revealedIndices: [],
-      scrambledIndices: shuffle(indices)
+      scrambledIndices: shuffle(indices),
+      students: [...students]
     });
   };
 
@@ -102,6 +96,14 @@ const App: React.FC = () => {
     }
   };
 
+  const handleStudentPicked = (name: string) => {
+    playSound('pick');
+    setGameState(prev => ({
+      ...prev,
+      students: prev.students.filter(s => s !== name)
+    }));
+  };
+
   const handleSolve = () => {
     playSound('applause');
     playSound('victory');
@@ -109,24 +111,35 @@ const App: React.FC = () => {
     setGameState(prev => ({ ...prev, status: 'solved' }));
   };
 
-  const handleReset = () => {
+  const handleResetProgress = () => {
+    const indices = Array.from({ length: gameState.keyword.length }, (_, i) => i);
+    setGameState(prev => ({
+      ...prev,
+      status: 'playing',
+      revealedIndices: [],
+      scrambledIndices: shuffle(indices)
+    }));
+  };
+
+  const handleBackToHome = () => {
     setGameState({
       keyword: '',
       grade: Grade.G10,
       questions: [],
       status: 'setup',
       revealedIndices: [],
-      scrambledIndices: []
+      scrambledIndices: [],
+      students: []
     });
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8 px-4">
-      <header className="max-w-6xl mx-auto mb-14 text-center">
-        <h1 className="text-4xl md:text-5xl lg:text-7xl mb-6 pt-4 title-modern-classic">
+      <header className="max-w-6xl mx-auto mb-10 text-center relative">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl mb-4 pt-4 title-modern-classic">
           GAME Ô CHỮ BÍ MẬT
         </h1>
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-center mt-4">
           <p className="px-5 py-2 bg-white border border-slate-200 text-slate-500 font-bold tracking-[0.2em] uppercase text-[10px] rounded-full shadow-sm">
             Môn: Tin Học • {gameState.status === 'setup' ? 'Thiết lập trò chơi' : `Khối Lớp ${gameState.grade}`}
           </p>
@@ -141,7 +154,10 @@ const App: React.FC = () => {
             state={gameState} 
             onAnswer={handleAnswer} 
             onSolve={handleSolve}
-            onReset={handleReset}
+            onReset={handleResetProgress}
+            onBackToHome={handleBackToHome}
+            onStudentPicked={handleStudentPicked}
+            onPlaySound={playSound}
           />
         )}
       </main>

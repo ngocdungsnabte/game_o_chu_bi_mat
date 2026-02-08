@@ -24,33 +24,44 @@
         .rotate-y-180 {
             transform: rotateY(180deg);
         }
-        /* Phong cách hiện đại, kiểu chữ cổ điển */
+        /* Phong cách hiện đại, kiểu chữ cổ điển với loang màu đỏ */
         .title-modern-classic {
             font-family: 'Cinzel', serif;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.15em;
-            background: linear-gradient(135deg, #0f172a 0%, #2563eb 50%, #1e40af 100%);
+            letter-spacing: 0.12em;
+            background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #991b1b 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             position: relative;
             display: inline-block;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
         .title-modern-classic::after {
             content: '';
             position: absolute;
-            bottom: -8px;
+            bottom: -6px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60%;
+            width: 40%;
             height: 2px;
-            background: linear-gradient(to right, transparent, #2563eb, transparent);
+            background: linear-gradient(to right, transparent, #ef4444, transparent);
         }
     </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "canvas-confetti": "https://esm.sh/canvas-confetti@^1.9.3",
+    "mammoth": "https://esm.sh/mammoth@1.6.0"
+  }
+}
+</script>
 </head>
 <body class="overflow-x-hidden">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"> </script>
 </body>
 </html>
